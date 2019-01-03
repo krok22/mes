@@ -1,0 +1,9 @@
+﻿  Źródło.cpp
+c:\users\krystian\workspace\wcim\wymiana ciepła i masy siatka\wymiana ciepła i masy siatka\źródło.cpp(17): warning C4101: "heigth": lokalna zmienna, do której nie istnieje odwołanie
+c:\users\krystian\workspace\wcim\wymiana ciepła i masy siatka\wymiana ciepła i masy siatka\źródło.cpp(99): warning C4101: "jacobian": lokalna zmienna, do której nie istnieje odwołanie
+  Trwa generowanie kodu
+  8 of 192 functions ( 4.2%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    8 functions had inline decision re-evaluated but remain unchanged
+  Zakończono generowanie kodu
+  wymiana ciepła i masy siatka.vcxproj -> C:\Users\Krystian\workspace\wcim\wymiana ciepła i masy siatka\Release\wymiana ciepła i masy siatka.exe
