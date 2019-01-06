@@ -8,6 +8,9 @@ private:
 	Node* array_node;
 	double* det_jacobian;
 	double* jacobian_surface;
+	double* matrix_p;
+	double* matrix_p_2;
+	double* final_matrix_p;
 	double** jacobian;
 	double** det_divide_jacobian;
 	double** dndx;
@@ -17,6 +20,11 @@ private:
 	double** matrix_pc_n1n2n3n4;
 	double** final_matrix_c;
 	double** final_matrix;
+	double** final_matrix_h_2d_bc;
+	double** matrix_n_sum_n;
+	double** matrix_p2_n_sum_n;
+	double*** ann;
+	double*** qnn;
 	double*** dndx_multiply_dndx_t;
 	double*** dndy_multiply_dndy_t;
 	double*** det_multiply_dnmdx_t;
@@ -38,7 +46,11 @@ public:
 	double** get_jacobian();
 	void set_det_jacobian(double* det_jacobian);
 	double* get_det_jacobian();
+	double* get_matrix_p();
+	double* get_matrix_p_2();
+	double* get_final_matrix_p();
 	void set_det_divide_jacobian(double** det_divide_jacobian);
+	double** get_matrix_n_sum_n();
 	double** get_det_divide_jacobian();
 	double** get_dndx();
 	double** get_dndy();
@@ -49,6 +61,10 @@ public:
 	double** get_final_matrix_c();
 	double** get_final_matrix();
 	double** get_matrix_pc_n1n2n3n4();
+	double** get_final_matrix_h_2d_bc();
+	double** get_matrix_p2_n_sum_n();
+	double*** get_ann();
+	double*** get_qnn();
 	double*** get_dndx_multiply_dndx_t();
 	double*** get_dndy_multiply_dndy_t();
 	double*** get_det_multiply_dnmdx_t();

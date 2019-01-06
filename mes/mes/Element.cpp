@@ -3,8 +3,11 @@
 Element::Element()
 {
 	array_node = new Node[4];
-	jacobian = new double*[4];
 	det_jacobian = new double[4];
+	matrix_p = new double[4];
+	matrix_p_2 = new double[4];
+	final_matrix_p = new double[4];
+	jacobian = new double*[4];
 	jacobian_surface = new double[4];
 	boundary_conditions = new double[4];
 	det_divide_jacobian = new double*[4];
@@ -13,6 +16,11 @@ Element::Element()
 	final_matrix_c = new double*[4];
 	final_matrix = new double*[4];
 	matrix_pc_n1n2n3n4 = new double*[4];
+	final_matrix_h_2d_bc = new double*[4];
+	matrix_n_sum_n = new double*[4];
+	matrix_p2_n_sum_n = new double*[4];
+	ann = new double**[4];
+	qnn = new double**[4];
 	dndx_multiply_dndx_t = new double**[4];
 	dndy_multiply_dndy_t = new double**[4];
 	det_multiply_dnmdx_t = new double**[4];
@@ -33,6 +41,11 @@ Element::Element()
 		final_matrix[i] = new double[4];
 		final_matrix_c[i] = new double[4];
 		matrix_pc_n1n2n3n4[i] = new double[4];
+		final_matrix_h_2d_bc[i] = new double[4];
+		matrix_n_sum_n[i] = new double[4];
+		matrix_p2_n_sum_n[i] = new double[4];
+		ann[i] = new double*[2];
+		qnn[i] = new double*[2];
 		dndx_multiply_dndx_t[i] = new double*[4];
 		dndy_multiply_dndy_t[i] = new double*[4];
 		det_multiply_dnmdx_t[i] = new double*[4];
@@ -53,6 +66,8 @@ Element::Element()
 			pc_matrix_n_multiply_nt[i][j] = new double[4];
 			n1n2n3n4[i][j] = new double[4];
 			sum_nnt[i][j] = new double[4];
+			ann[i][j] = new double[4];
+			qnn[i][j] = new double[4];
 			nnt[i][j] = new double*[4];
 
 			for (int k = 0; k < 4; k++)
@@ -121,9 +136,29 @@ double* Element::get_det_jacobian()
 	return this->det_jacobian;
 }
 
+double * Element::get_matrix_p()
+{
+	return this->matrix_p;
+}
+
+double * Element::get_matrix_p_2()
+{
+	return this->matrix_p_2;
+}
+
+double * Element::get_final_matrix_p()
+{
+	return this->final_matrix_p;
+}
+
 void Element::set_det_divide_jacobian(double ** det_divide_jacobian)
 {
 	this->det_divide_jacobian = det_divide_jacobian;
+}
+
+double ** Element::get_matrix_n_sum_n()
+{
+	return this->matrix_n_sum_n;
 }
 
 double ** Element::get_det_divide_jacobian()
@@ -174,6 +209,26 @@ double ** Element::get_final_matrix()
 double** Element::get_matrix_pc_n1n2n3n4()
 {
 	return this->matrix_pc_n1n2n3n4;
+}
+
+double ** Element::get_final_matrix_h_2d_bc()
+{
+	return this->final_matrix_h_2d_bc;
+}
+
+double ** Element::get_matrix_p2_n_sum_n()
+{
+	return this->matrix_p2_n_sum_n;
+}
+
+double *** Element::get_ann()
+{
+	return this->ann;
+}
+
+double *** Element::get_qnn()
+{
+	return this->qnn;
 }
 
 double *** Element::get_dndx_multiply_dndx_t()

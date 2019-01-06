@@ -23,6 +23,16 @@ Node* Grid::get_node_array()
 	return this->node_array;
 }
 
+double ** Grid::get_global_matrix_h()
+{
+	return this->global_matrix_h;
+}
+
+double * Grid::get_global_matrix_p()
+{
+	return this->global_matrix_p;
+}
+
 void Grid::initialize(int length, int heigth)
 {
 	int size_node_array = length * heigth;

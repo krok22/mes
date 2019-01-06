@@ -11,6 +11,9 @@ using namespace std;
 double** jacobian2d(Grid grid,int amount_of_elements);
 double** matrixC(Grid grid,int amount_of_elements);
 double** matrix_h_2d_bc(Grid grid, int amount_of_elements);
+double*  matrix_p(Grid grid, int amount_of_elements);
+double** aggregation(Grid grid, int amount_of_elements);
+double* aggregation_vector_p(Grid grid, int amount_of_elements);
 int main()
 {
 	string linia;
@@ -75,6 +78,7 @@ int main()
 	Element* elements = grid.get_element_array();
 	Node* nodes = elements[0].get_array_node();
 	elements[0].set_boundary_condition(is_boundary_condition[0]);
+	//cout << "*****TEST*****" << endl;
 	for (int i = 0,j=0; j < length; i++,j++)
 	{
 		nodes[j].set_x(v[0][i]);
@@ -84,6 +88,7 @@ int main()
 		//cout << "node_id " << nodes[j].get_x()<<" "<< nodes[j].get_y() << endl;
 	}
 
+	//cout << "*****TEST*****" << endl;
 
 
 	for (int i = 0; i < 1; i++)
@@ -110,7 +115,8 @@ int main()
 
 	matrixC(grid, 1);
 	matrix_h_2d_bc(grid, 1);
-
+	matrix_p(grid, 1);
+	aggregation(grid, 1);
 
 	system("pause");
 }
@@ -352,6 +358,7 @@ double ** matrix_h_2d_bc(Grid grid, int amount_of_elements)
 		double* jacobian_surface = element_array[i].get_jacobian_surface();
 		double* det_jacobian_surface = new double[4];
 		double* boundary_conditions = element_array[i].get_boundary_conditions();
+		double** final_matrix_h_2d_bc = element_array[i].get_final_matrix_h_2d_bc();
 		double*** n1n2n3n4 = element_array[i].get_n1n2n3n4();
 		double*** sum_nnt = element_array[i].get_sum_nnt();
 		double**** nnt = element_array[i].get_nnt();
@@ -428,18 +435,21 @@ double ** matrix_h_2d_bc(Grid grid, int amount_of_elements)
 		//jakobian powierzchni d³ugoœæ odcinka miêdzy pkt/2
 		//cout << endl << "jacobian powierzchni" << endl;
 
-		for (int i = 0; i < 4; i++)
+		for (int i = 0,j=1; i < 4; i++,j++)
 		{
-			jacobian_surface[i]= sqrt(pow((nodes[i].get_x()-nodes[i+1].get_x()), 2)+ pow((nodes[i].get_y() - nodes[i + 1].get_y()), 2))/2.0;
-			//cout << "i: "<<i<<" "<<jacobian_surface[i] << endl;
+			if (j == 4)
+				j = 0;
+			jacobian_surface[i]= sqrt(pow((nodes[i].get_x()-nodes[j].get_x()), 2)+ pow((nodes[i].get_y() - nodes[j].get_y()), 2))/2;
+			//cout << "j: "<<j<<" "<<jacobian_surface[i] << endl;
+			//cout << "nodes[i].get_x(): " << nodes[i].get_x()<<" " << "nodes[i].get_y(): " << nodes[i].get_y()<<"nodes[j].get_x(): "<< nodes[j].get_x() << " " << "nodes[j].get_y(): " << nodes[j].get_y() << endl;
 		}
 
 		//sum_nnt[pow][N1..N4][N1..N4]
-		cout << endl << "sum_nnt[pow][N1..N4][N1..N4]" << endl << endl;
+		//cout << endl << "sum_nnt[pow][N1..N4][N1..N4]" << endl << endl;
 
 		for (int i = 0; i < 4; i++)
 		{
-			cout << "pow: " << i + 1 << endl;
+			//cout << "pow: " << i + 1 << endl;
 			for (int j = 0; j < 4; j++)
 			{
 				for (int k = 0; k < 4; k++)
@@ -447,13 +457,199 @@ double ** matrix_h_2d_bc(Grid grid, int amount_of_elements)
 					sum_nnt[i][j][k] = (nnt[i][0][j][k] + nnt[i][1][j][k])*jacobian_surface[i];
 					//cout <<"sum_nnt["<<i<<"]"<<"["<<j<<"]"<<"["<<k<<"]: "<< sum_nnt[i][j][k] <<" ";
 					//cout << nnt[i][0][j][k] << " " << jacobian_surface[i]<<" ";
-					cout <<"i: "<<i<<" "<< jacobian_surface[i] << " ";
+					//cout <<"i: "<<i<<" "<< jacobian_surface[i] << " ";
+					//cout << sum_nnt[i][j][k] << " ";
 				}
-				cout << endl;
+				//cout << endl;
 			}
+		}
+
+		//final_matrix_h_2d_bc[N1..N4][N1..N4]
+		//cout << endl << "final_matrix_h_2d_bc[N1..N4][N1..N4]" << endl;
+
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				final_matrix_h_2d_bc[i][j] = sum_nnt[0][i][j] * boundary_conditions[0] + sum_nnt[1][i][j] * boundary_conditions[1] + sum_nnt[2][i][j] * boundary_conditions[2] + sum_nnt[3][i][j] * boundary_conditions[3];
+				//cout << final_matrix_h_2d_bc[i][j] << " ";
+			}
+			//cout << endl;
+		}
+
+	}
+
+	return nullptr;
+}
+
+double* matrix_p(Grid grid, int amount_of_elements) 
+{
+	Element* element_array = grid.get_element_array();
+	double a = 85.23;
+	double t_infinity = 40.0;
+
+	for (int i = 0; i < amount_of_elements; i++)
+	{
+		double* matrix_p_1 = element_array[i].get_matrix_p();
+		double* jacobian_surface = element_array[i].get_jacobian_surface();
+		double** matrix_n_sum_n = element_array[i].get_matrix_n_sum_n();
+		double*** ann= element_array[i].get_ann();
+		double*** n1n2n3n4 = element_array[i].get_n1n2n3n4();
+		double* boundary_conditions = element_array[i].get_boundary_conditions();
+		
+		//ann[pow][pc][N1..N4]
+		//cout << endl << "ann[pow][pc][N1..N4]" << endl;
+
+		for (int i = 0; i < 4; i++)
+		{
+			//cout << "pow: " << i << endl;
+			for (int j = 0; j < 2; j++)
+			{
+				//cout << "pc: " << j << endl;
+				for (int k = 0; k < 4; k++)
+				{
+					ann[i][j][k] = n1n2n3n4[i][j][k] * a * t_infinity;
+					//cout << ann[i][j][k] << " ";
+				}
+				//cout << endl;
+			}
+		}
+		//matrix_n_sum_n[pow][n1..n4]
+		//cout << endl << "matrix_n_sum_n[pow][N]" << endl;
+		for (int i = 0; i < 4; i++)
+		{
+			//cout << "pow: " << i << endl;
+			for (int j = 0; j < 4; j++)
+			{
+				matrix_n_sum_n[i][j] = (ann[i][0][j]+ ann[i][1][j])*jacobian_surface[i];
+				//cout << "ann["<<i<<"][0]["<<j<<"]: "<< ann[i][0][j]<<" ann["<<i<<"][1]["<<j<<"]: "<< ann[i][1][j]<<" ";
+				//cout << matrix_n_sum_n[i][j] << " ";
+				//cout << ann[i][0][j] << " ";
+				//cout << ann[i][0][j] << " " << ann[i][1][j] << " ";
+			}
+			//cout << endl;
+		}
+
+		//matrix_p_1[pow]
+		cout << "matrix_p_1[pow]" << endl;
+
+		for (int i = 0; i < 4; i++)
+		{
+			matrix_p_1[i] = (matrix_n_sum_n[i][0] * boundary_conditions[i] + matrix_n_sum_n[i][1] * boundary_conditions[i] + matrix_n_sum_n[i][2] * boundary_conditions[i] + matrix_n_sum_n[i][3] * boundary_conditions[i])*(-1.0);
+			cout << matrix_p_1[i] << " ";
+		}	
+		///////////////////////////////////////////////////////////////////////////////////////////
+
+		double q = 200.33;
+		double***qnn = element_array[i].get_qnn();
+		double**matrix_p2_n_sum_n = element_array[i].get_matrix_p2_n_sum_n();
+		double* matrix_p_2 = element_array[i].get_matrix_p_2();
+		double* final_matrix_p = element_array[i].get_final_matrix_p();
+
+		for (int i = 0; i < 4; i++)
+		{
+			//cout << "pow: " << i << endl;
+			for (int j = 0; j < 2; j++)
+			{
+				//cout << "pc: " << j << endl;
+				for (int k = 0; k < 4; k++)
+				{
+					qnn[i][j][k] = n1n2n3n4[i][j][k] * q;
+					//cout << ann[i][j][k] << " ";
+				}
+				//cout << endl;
+			}
+		}
+		//matrix_n_sum_n[pow][n1..n4]
+		//cout << endl << "matrix_n_sum_n[pow][N]" << endl;
+		for (int i = 0; i < 4; i++)
+		{
+			//cout << "pow: " << i << endl;
+			for (int j = 0; j < 4; j++)
+			{
+				matrix_p2_n_sum_n[i][j] = (qnn[i][0][j] + qnn[i][1][j])*jacobian_surface[i];
+				//cout << "ann["<<i<<"][0]["<<j<<"]: "<< ann[i][0][j]<<" ann["<<i<<"][1]["<<j<<"]: "<< ann[i][1][j]<<" ";
+				//cout << matrix_n_sum_n[i][j] << " ";
+				//cout << qnn[i][0][j] << " ";
+				//cout << ann[i][0][j] << " " << ann[i][1][j] << " ";
+			}
+			//cout << endl;
+		}
+
+		//matrix_p_1[pow]
+		//cout << "matrix_p_2[pow]" << endl;
+
+		for (int i = 0; i < 4; i++)
+		{
+			matrix_p_2[i] = (matrix_p2_n_sum_n[i][0] * boundary_conditions[i] + matrix_p2_n_sum_n[i][1] * boundary_conditions[i] + matrix_p2_n_sum_n[i][2] * boundary_conditions[i] + matrix_p2_n_sum_n[i][3] * boundary_conditions[i]);
+			//cout << matrix_p_2[i] << " ";
+		}
+		//cout << "final_matrix_p" << endl;
+		for (int i = 0; i < 4; i++)
+		{
+			final_matrix_p[i] = matrix_p_1[i] + matrix_p_2[i];
+			//cout << final_matrix_p[i] << " ";
+		}
+	}
+	return nullptr;
+}
+
+double** aggregation(Grid grid, int amount_of_elements)
+{
+	int size = sqrt(amount_of_elements);
+	size *= 4;
+
+	//cout << endl << "size: " << size << endl;
+	double** global_matrix_h = grid.get_global_matrix_h();
+
+	 global_matrix_h= new double*[size];
+	for (int i = 0; i < size; i++)
+	{
+		global_matrix_h[i] = new double[size];
+	}
+
+	Element* element_array = grid.get_element_array();
+	
+	//elements
+	for (int i = 0; i < amount_of_elements; i++)
+	{
+		Node*nodes=element_array[i].get_array_node();
+		double** local_matrix_h = element_array[i].get_final_matrix_h_2d_bc();
+
+		//each
+		//cout <<endl<< "aggregation: " << endl;
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				global_matrix_h[nodes[i].get_id()-1][nodes[j].get_id()-1] = local_matrix_h[i][j];
+				//cout << global_matrix_h[nodes[i].get_id()-1][nodes[j].get_id()-1] << " ";
+			}
+			//cout << endl;
+		}
+	}
+	return global_matrix_h;
+}
+
+double* aggregation_vector_p(Grid grid, int amount_of_elements)
+{
+	int size = sqrt(amount_of_elements);
+	size *= 4;
+	double* matrix_global_p = grid.get_global_matrix_p();
+	matrix_global_p = new double[size];
+	Element* element_array = grid.get_element_array();
+
+	for (int i = 0; i < amount_of_elements; i++)
+	{
+		Node* node_array=element_array[i].get_array_node();
+		double* local_matrix_p = element_array[i].get_final_matrix_p();
+
+		cout <<endl<< "matrix_global_p: " << endl;
+		for (int i = 0; i < 4; i++)
+		{
+			matrix_global_p[node_array[i].get_id()] = local_matrix_p[i];
 		}
 	}
 
-	
 	return nullptr;
 }
