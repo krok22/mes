@@ -5,6 +5,7 @@ Element::Element()
 	array_node = new Node[4];
 	jacobian = new double*[4];
 	det_jacobian = new double[4];
+	jacobian_surface = new double[4];
 	boundary_conditions = new double[4];
 	det_divide_jacobian = new double*[4];
 	dndx = new double*[4];
@@ -88,6 +89,11 @@ int Element::get_id()
 double* Element::get_boundary_conditions()
 {
 	return this->boundary_conditions;
+}
+
+double * Element::get_jacobian_surface()
+{
+	return this->jacobian_surface;
 }
 
 void Element::set_boundary_condition(double * boundary_condition)

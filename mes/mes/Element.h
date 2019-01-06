@@ -6,8 +6,9 @@ private:
     int id;
 	double* boundary_conditions;
 	Node* array_node;
-	double** jacobian;
 	double* det_jacobian;
+	double* jacobian_surface;
+	double** jacobian;
 	double** det_divide_jacobian;
 	double** dndx;
 	double** dndy;
@@ -31,6 +32,7 @@ public:
 	Node* get_array_node();
 	int get_id();
 	double* get_boundary_conditions();
+	double* get_jacobian_surface();
 	void set_boundary_condition(double* boundary_condition);
 	void set_jacobian(double** jacobian);
 	double** get_jacobian();

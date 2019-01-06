@@ -3,7 +3,8 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
-#include <sstream> 
+#include <sstream>
+#include <math.h>
 #include "Grid.h"
 using namespace std;
 
@@ -348,10 +349,14 @@ double ** matrix_h_2d_bc(Grid grid, int amount_of_elements)
 	{
 		double n[8], e[8];
 		double convection = 25.0;
+		double* jacobian_surface = element_array[i].get_jacobian_surface();
+		double* det_jacobian_surface = new double[4];
 		double* boundary_conditions = element_array[i].get_boundary_conditions();
 		double*** n1n2n3n4 = element_array[i].get_n1n2n3n4();
 		double*** sum_nnt = element_array[i].get_sum_nnt();
 		double**** nnt = element_array[i].get_nnt();
+
+		Node* nodes = element_array[i].get_array_node();
 
 		n[0] = -0.57735;
 		n[1] = 0.57735;
@@ -420,6 +425,15 @@ double ** matrix_h_2d_bc(Grid grid, int amount_of_elements)
 			//cout << endl;
 		}
 
+		//jakobian powierzchni d³ugoœæ odcinka miêdzy pkt/2
+		//cout << endl << "jacobian powierzchni" << endl;
+
+		for (int i = 0; i < 4; i++)
+		{
+			jacobian_surface[i]= sqrt(pow((nodes[i].get_x()-nodes[i+1].get_x()), 2)+ pow((nodes[i].get_y() - nodes[i + 1].get_y()), 2))/2.0;
+			//cout << "i: "<<i<<" "<<jacobian_surface[i] << endl;
+		}
+
 		//sum_nnt[pow][N1..N4][N1..N4]
 		cout << endl << "sum_nnt[pow][N1..N4][N1..N4]" << endl << endl;
 
@@ -430,8 +444,10 @@ double ** matrix_h_2d_bc(Grid grid, int amount_of_elements)
 			{
 				for (int k = 0; k < 4; k++)
 				{
-					sum_nnt[i][j][k] = nnt[i][0][j][k] + nnt[i][1][j][k];
-					cout << sum_nnt[i][j][k] << " ";
+					sum_nnt[i][j][k] = (nnt[i][0][j][k] + nnt[i][1][j][k])*jacobian_surface[i];
+					//cout <<"sum_nnt["<<i<<"]"<<"["<<j<<"]"<<"["<<k<<"]: "<< sum_nnt[i][j][k] <<" ";
+					//cout << nnt[i][0][j][k] << " " << jacobian_surface[i]<<" ";
+					cout <<"i: "<<i<<" "<< jacobian_surface[i] << " ";
 				}
 				cout << endl;
 			}
